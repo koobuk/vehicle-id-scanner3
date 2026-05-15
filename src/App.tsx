@@ -60,7 +60,9 @@ export default function App() {
     if (videoRef.current && canvasRef.current) {
       const video = videoRef.current;
       const canvas = canvasRef.current;
-      const targetWidth = 800;
+      // Target a smaller size for faster processing
+      // 640px is usually plenty for a single line of text like a VIN
+      const targetWidth = 640;
       const aspectRatio = video.videoHeight / video.videoWidth;
       const targetHeight = targetWidth * aspectRatio;
 
@@ -69,7 +71,9 @@ export default function App() {
       const ctx = canvas.getContext('2d');
       if (ctx) {
         ctx.drawImage(video, 0, 0, targetWidth, targetHeight);
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
+        
+        // Use lower quality (0.4) to minimize payload size for speed
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.4);
         performOCR(dataUrl);
         stopCamera();
       }
@@ -81,18 +85,18 @@ export default function App() {
     try {
       const imageBase64 = base64Image.split(',')[1];
       const response = await ai.models.generateContent({
-        model: "gemini-2.0-flash",
+        model: "gemini-2.0-flash", 
         contents: [
           {
             parts: [
-              { text: "추출: 차대번호(VIN)만. 17자리 영숫자 위주. 설명 없이 텍스트만." },
+              { text: "추출: 차대번호(VIN) 17자리만. 결과만 출력." },
               { inlineData: { mimeType: "image/jpeg", data: imageBase64 } }
             ]
           }
         ]
       });
 
-      const cleanedText = response.text.trim().replace(/\s/g, '');
+      const cleanedText = response.text.trim().replace(/[^A-Z0-9]/gi, '');
       if (cleanedText) {
         setFormValues(prev => ({ ...prev, vin: cleanedText }));
       }
