@@ -1,0 +1,6 @@
+{
+  "name": "Vehicle ID Scanner",
+  "description": "Scan and OCR vehicle identification numbers (VIN) using your camera.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": []
+}
